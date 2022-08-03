@@ -1,3 +1,8 @@
+codec/CMakeLists.txt
+codec/build/win32/dec/.vs/
+codec/build/win32/dec/Backup1/
+codec/build/win32/dec/UpgradeLog2.htm
+
 # Object files
 *.o
 *.obj
@@ -57,3 +62,4 @@ codec/build/iOS/dec/welsdec/build/
 # editor files
 *~
 
+build_ninja/
