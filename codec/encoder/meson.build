@@ -37,7 +37,7 @@ objs_asm = []
 if cpu_family in ['x86', 'x86_64']
   asm_sources = [
     'core/x86/coeff.asm',
-    'core/x86/dct.asm',
+    'core/x86/dct_enc.asm',
     'core/x86/intra_pred.asm',
     'core/x86/matrix_transpose.asm',
     'core/x86/memzero.asm',

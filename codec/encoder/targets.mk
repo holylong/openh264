@@ -40,7 +40,7 @@ ENCODER_OBJS += $(ENCODER_CPP_SRCS:.cpp=.$(OBJ))
 
 ENCODER_ASM_SRCS=\
 	$(ENCODER_SRCDIR)/core/x86/coeff.asm\
-	$(ENCODER_SRCDIR)/core/x86/dct.asm\
+	$(ENCODER_SRCDIR)/core/x86/dct_enc.asm\
 	$(ENCODER_SRCDIR)/core/x86/intra_pred.asm\
 	$(ENCODER_SRCDIR)/core/x86/matrix_transpose.asm\
 	$(ENCODER_SRCDIR)/core/x86/memzero.asm\

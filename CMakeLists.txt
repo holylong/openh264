@@ -35,6 +35,20 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/codec)
 
+# makefile build log
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/cpuid.o codec/common/x86/cpuid.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/dct.o codec/common/x86/dct.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/deblock.o codec/common/x86/deblock.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/expand_picture.o codec/common/x86/expand_picture.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/intra_pred_com.o codec/common/x86/intra_pred_com.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/mb_copy.o codec/common/x86/mb_copy.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/mc_chroma.o codec/common/x86/mc_chroma.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/mc_luma.o codec/common/x86/mc_luma.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/satd_sad.o codec/common/x86/satd_sad.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/vaa.o codec/common/x86/vaa.asm
+
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/decoder/core/x86/dct_dec.o codec/decoder/core/x86/dct_dec.asm
+# nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/decoder/core/x86/intra_pred.o codec/decoder/core/x86/intra_pred.asm
 file(GLOB SIMD_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/cpuid.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/dct.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/deblock.asm

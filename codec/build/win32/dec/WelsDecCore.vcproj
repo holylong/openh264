@@ -396,7 +396,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\decoder\core\x86\dct.asm"
+				RelativePath="..\..\..\decoder\core\x86\dct_dec.asm"
 				>
 				<FileConfiguration
 					Name="Release|Win32"

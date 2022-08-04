@@ -28,7 +28,7 @@ DECODER_CPP_SRCS=\
 DECODER_OBJS += $(DECODER_CPP_SRCS:.cpp=.$(OBJ))
 
 DECODER_ASM_SRCS=\
-	$(DECODER_SRCDIR)/core/x86/dct.asm\
+	$(DECODER_SRCDIR)/core/x86/dct_dec.asm\
 	$(DECODER_SRCDIR)/core/x86/intra_pred.asm\
 
 DECODER_OBJSASM += $(DECODER_ASM_SRCS:.asm=.$(OBJ))
