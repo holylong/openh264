@@ -8,32 +8,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/codec/decoder/core/inc
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/decoder/plus/inc
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/api/wels)
 
-# enable_language(ASM)
-set(CMAKE_ASM_COMPILER nasm)
-set(CMAKE_ASM_NASM_LINK_EXECUTABLE "nasm <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
-SET(CMAKE_ASM_NASM_FLAGS "-g")
-
-# # set(CMAKE_ASM_NASM_LINK_EXECUTABLE "ld <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
-set(CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> <INCLUDES> <FLAGS> -o <OBJECT> <SOURCE>")
-# set(CMAKE_ASM_NASM_LINK_EXECUTABLE "ld <FLAGS> <CMAKE_ASM_NASM_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>")
-# set(CMAKE_ASM_NASM_LINK_LIBRARY "ld <FLAGS> <CMAKE_ASM_NASM_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>")
-# # add_compile_options(
-# #     "$<$<COMPILE_LANGUAGE:ASM_NASM>:-f $<IF:$<BOOL:$<TARGET_PROPERTY:NASM_OBJ_FORMAT>>, 
-# #     $<TARGET_PROPERTY:NASM_OBJ_FORMAT>, ${CMAKE_ASM_NASM_OBJECT_FORMAT}>>"
-# # )
 enable_language(ASM_NASM)
-# enable_language(CXX ASM)
-# # set(CMAKE_ASM_NASM_OBJECT_FORMAT elf64)
-# set(CMAKE_ASM_NASM_FLAGS_DEBUG "-g -Fdwarf")
-
 set(CMAKE_ASM_NASM_SOURCE_FILE_EXTENSIONS asm)
-
 add_definitions(-DX86_ASM)
-
-set(CPU_TYPE x86_64)
-set(CMAKE_BUILD_TYPE Debug)
-
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/codec)
 
 # makefile build log
 # nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/common/x86/cpuid.o codec/common/x86/cpuid.asm
@@ -49,15 +26,20 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/decoder/core/x86/dct_dec.o codec/decoder/core/x86/dct_dec.asm
 # nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/decoder/core/x86/intra_pred.o codec/decoder/core/x86/intra_pred.asm
-file(GLOB SIMD_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/cpuid.asm
+file(GLOB COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/cpuid.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/dct.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/deblock.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/expand_picture.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/mc_chroma.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/mc_luma.asm
-                        ${CMAKE_CURRENT_SOURCE_DIR}/codec/decoder/core/x86/dct_dec.asm
-                        ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/mb_copy.asm
+                        ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/mb_copy.asm)
+
+file(GLOB DEC_ASM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/codec/decoder/core/x86/dct_dec.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/decoder/core/x86/intra_pred.asm)
+
+file(GLOB ONLY_LINUX_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/vaa.asm
+                        ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/satd_sad.asm
+                        ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/intra_pred_com.asm)
 
 file(GLOB dec_INCS ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/inc/copy_mb.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/inc/cpu.h
@@ -158,7 +140,7 @@ add_library(welsdeccore STATIC ${dec_INCS} ${dec_SRCS})
 
 set(ASM_OBJS "")
 
-foreach(mainfile IN LISTS SIMD_SOURCES)
+foreach(mainfile IN LISTS COMMON_SOURCES)
     get_filename_component(mainname ${mainfile} NAME_WE)
     if(MSVC)
         add_custom_command(TARGET welsdeccore
@@ -178,6 +160,50 @@ foreach(mainfile IN LISTS SIMD_SOURCES)
     endif(MSVC) #MSVC
     message(STATUS "==>> ${mainname} ${mainfile}")
 endforeach()
+
+foreach(mainfile IN LISTS DEC_ASM_SOURCES)
+    get_filename_component(mainname ${mainfile} NAME_WE)
+    if(MSVC)
+        add_custom_command(TARGET welsdeccore
+                            PRE_LINK
+                            COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f win64 -DWIN64 -o ${CMAKE_CURRENT_BINARY_DIR}/"${mainname}.obj"
+                            COMMAND echo "== nasm asm ok ${mainname}.obj"
+                            )
+        list(APPEND ASM_OBJS "${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj") 
+        # message(STATUS "++ ${ASM_OBJS}")
+    else()
+        add_custom_command(TARGET welsdeccore
+                    PRE_LINK
+                    COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -DUNIX64 -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/"${mainname}.o"
+                    COMMAND echo "== nasm asm ok ${mainname}.o"
+        )
+        list(APPEND ASM_OBJS "${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o") 
+    endif(MSVC) #MSVC
+    message(STATUS "==>> ${mainname} ${mainfile}")
+endforeach()
+
+foreach(mainfile IN LISTS ONLY_LINUX_SRCS)
+    get_filename_component(mainname ${mainfile} NAME_WE)
+    if(UNIX)
+        add_custom_command(TARGET welsdeccore
+                    PRE_LINK
+                    COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -DUNIX64 -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/"${mainname}.o"
+                    COMMAND echo "== nasm asm ok ${mainname}.o"
+        )
+        list(APPEND ASM_OBJS "${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o") 
+    endif(UNIX) #MSVC
+    message(STATUS "==>> ${mainname} ${mainfile}")
+endforeach()
+
+# Optimize execution speed
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+set(CMAKE_CXX_FLAGS_RELEASE -Ofast)
+
+#-DHAVE_AVX2 -Wall -fno-strict-aliasing -fPIC -MMD -MP -fstack-protector-all -DGENERATED_VERSION_HEADER -DHAVE_AVX2 -Wno-class-memaccess
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3  -Wall -m64")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3  -Wall -m64")
 
 message(STATUS "==>>all objs: ${ASM_OBJS}")
 target_link_libraries(welsdeccore PRIVATE ${ASM_OBJS})
