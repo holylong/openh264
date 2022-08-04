@@ -157,7 +157,7 @@ foreach(mainfile IN LISTS SIMD_SOURCES)
     else()
         add_custom_command(TARGET welsdeccore
                     PRE_LINK
-                    COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f win64 -DWIN64 -o ${CMAKE_CURRENT_BINARY_DIR}/"${mainname}.o"
+                    COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/"${mainname}.o"
                     COMMAND echo "== nasm asm ok ${mainname}.o"
         )
         list(APPEND ASM_OBJS "${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o") 
