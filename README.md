@@ -3,7 +3,16 @@
 
 ## todos
 1.支持linux汇编    已支持
+
 2.支持encoder编译  已支持
+
+## 编译方式
+```
+mkdir build_release
+cd build_release
+cmake ..
+cmake --build -j4
+```
 
 
 # 相关测试
