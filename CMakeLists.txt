@@ -336,18 +336,6 @@ file(GLOB enc_console_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/codec/console/common/src/
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/console/enc/src/welsenc.cpp
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/console/common/inc/read_config.h)
 
-add_compile_options(-fPIC)
-# set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
-# set（CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-# set（CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-#decoder
-add_library(welsdeccore STATIC ${dec_INCS} ${dec_SRCS})
-#encoder
-add_library(welsenccore STATIC ${enc_INCS} ${enc_SRCS} ${enc_preprocess_SRCS})
-#welsvp
-add_library(welsvp STATIC ${welsvp_SRC})
-
-
 set(ASM_DEC_OBJS "")
 set(ASM_ENC_OBJS "")
 set(ASM_WELSVP_OBJS "")
@@ -356,18 +344,18 @@ set(ASM_COM_OBJS "")
 foreach(mainfile IN LISTS COMMON_SOURCES)
     get_filename_component(mainname ${mainfile} NAME_WE)
     if(MSVC)
-        add_custom_command(TARGET welsdeccore
-                            PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj
                             COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f win64 -DWIN64 -o ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj
+                            DEPENDS ${mainfile}
                             COMMAND echo == nasm asm ok ${mainname}.obj
                             )
         list(APPEND ASM_DEC_OBJS ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj) 
         list(APPEND ASM_ENC_OBJS ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj)
         list(APPEND ASM_COM_OBJS ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj)
     else()
-        add_custom_command(TARGET welsdeccore
-                    PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o
                     COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -DUNIX64 -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o
+                    DEPENDS ${mainfile}
                     COMMAND echo == nasm asm ok ${mainname}.o
         )
         list(APPEND ASM_DEC_OBJS ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o)
@@ -380,16 +368,16 @@ endforeach()
 foreach(mainfile IN LISTS DEC_ASM_SOURCES)
     get_filename_component(mainname ${mainfile} NAME_WE)
     if(MSVC)
-        add_custom_command(TARGET welsdeccore
-                            PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/decoder/${mainname}.obj
                             COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f win64 -DWIN64 -o ${CMAKE_CURRENT_BINARY_DIR}/decoder/${mainname}.obj
+                            DEPENDS ${mainfile}
                             COMMAND echo == nasm asm ok ${mainname}.obj
                             )   
         list(APPEND ASM_DEC_OBJS ${CMAKE_CURRENT_BINARY_DIR}/decoder/${mainname}.obj) 
     else()
-        add_custom_command(TARGET welsdeccore
-                    PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/decoder/${mainname}.o
                     COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -DUNIX64 -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/decoder/${mainname}.o
+                    DEPENDS ${mainfile}
                     COMMAND echo == nasm asm ok ${mainname}.o
         )
         list(APPEND ASM_DEC_OBJS ${CMAKE_CURRENT_BINARY_DIR}/decoder/${mainname}.o) 
@@ -400,16 +388,16 @@ endforeach()
 foreach(mainfile IN LISTS ENC_ASM_SOURCES)
     get_filename_component(mainname ${mainfile} NAME_WE)
     if(MSVC)
-        add_custom_command(TARGET welsenccore
-                            PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/encoder/${mainname}.obj
                             COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f win64 -DWIN64 -o ${CMAKE_CURRENT_BINARY_DIR}/encoder/${mainname}.obj
+                            DEPENDS ${mainfile}
                             COMMAND echo == nasm asm ok ${mainname}.obj
                             )
         list(APPEND ASM_ENC_OBJS ${CMAKE_CURRENT_BINARY_DIR}/encoder/${mainname}.obj) 
     else()
-        add_custom_command(TARGET welsenccore
-                    PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/encoder/${mainname}.o
                     COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -DUNIX64 -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/encoder/${mainname}.o
+                    DEPENDS ${mainfile}
                     COMMAND echo == nasm asm ok ${mainname}.o
         )
         list(APPEND ASM_ENC_OBJS ${CMAKE_CURRENT_BINARY_DIR}/encoder/${mainname}.o) 
@@ -420,16 +408,16 @@ endforeach()
 foreach(mainfile IN LISTS ONLY_ENC_SRCS)
     get_filename_component(mainname ${mainfile} NAME_WE)
     if(MSVC)
-        add_custom_command(TARGET welsenccore
-                            PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj
                             COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f win64 -DWIN64 -o ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj
+                            DEPENDS ${mainfile}
                             COMMAND echo == nasm asm ok ${mainname}.obj
                             )
         list(APPEND ASM_WELSVP_OBJS ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.obj)
     else()
-        add_custom_command(TARGET welsdeccore
-                    PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o
                     COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -DUNIX64 -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o
+                    DEPENDS ${mainfile}
                     COMMAND echo == nasm asm ok ${mainname}.o
         )
         list(APPEND ASM_WELSVP_OBJS ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o)
@@ -437,8 +425,7 @@ foreach(mainfile IN LISTS ONLY_ENC_SRCS)
     message(STATUS ==>>${mainfile})
 endforeach()
 
-add_custom_command(TARGET welsdeccore
-                    PRE_BUILD
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/encoder
                     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/encoder
                     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/welsvp
                     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/decoder)
@@ -446,16 +433,16 @@ add_custom_command(TARGET welsdeccore
 foreach(mainfile IN LISTS welsvp_ASM_SRCS)
     get_filename_component(mainname ${mainfile} NAME_WE)
     if(MSVC)
-        add_custom_command(TARGET welsvp
-                            PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/welsvp/${mainname}.obj
                             COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -f win64 -DWIN64 -o ${CMAKE_CURRENT_BINARY_DIR}/welsvp/${mainname}.obj
+                            DEPENDS ${mainfile}
                             COMMAND echo == nasm asm ok ${mainname}.obj
                             )
         list(APPEND ASM_WELSVP_OBJS ${CMAKE_CURRENT_BINARY_DIR}/welsvp/${mainname}.obj) 
     else()
-        add_custom_command(TARGET welsvp
-                            PRE_LINK
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/welsvp/${mainname}.o
                             COMMAND nasm -I${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/ ${mainfile} -DUNIX64 -f elf64 -DHAVE_AVX2 -o ${CMAKE_CURRENT_BINARY_DIR}/welsvp/${mainname}.o
+                            DEPENDS ${mainfile}
                             COMMAND echo == nasm asm ok ${mainname}.o)
         list(APPEND ASM_WELSVP_OBJS ${CMAKE_CURRENT_BINARY_DIR}/welsvp/${mainname}.o) 
     endif(MSVC) #MSVC
@@ -473,6 +460,17 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3  -Wall -m64")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3  -Wall -m64")
 
 message(STATUS ==>>all objs: ${ASM_DEC_OBJS})
+
+add_compile_options(-fPIC)
+# set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
+# set（CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+# set（CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+#decoder
+add_library(welsdeccore STATIC ${dec_INCS} ${dec_SRCS} ${ASM_DEC_OBJS} ${ASM_COM_OBJS})
+#encoder
+add_library(welsenccore STATIC ${enc_INCS} ${enc_SRCS} ${enc_preprocess_SRCS} ${ASM_ENC_OBJS})
+#welsvp
+add_library(welsvp STATIC ${welsvp_SRC} ${ASM_WELSVP_OBJS})
 
 target_link_libraries(welsdeccore PRIVATE ${ASM_DEC_OBJS})
 target_include_directories(welsdeccore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/codec/decoder/core/inc 
