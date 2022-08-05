@@ -7,6 +7,7 @@
 2.支持encoder编译  已支持
 
 ## 编译方式
+首先安装cmake与nasm,并配置环境变量
 ```
 mkdir build_release
 cd build_release
