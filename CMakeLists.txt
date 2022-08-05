@@ -6,9 +6,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/codec/common/inc
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/api/wels)
 
-enable_language(ASM_NASM)
-set(CMAKE_ASM_NASM_SOURCE_FILE_EXTENSIONS asm)
-add_definitions(-DX86_ASM)
+option(SUPPORT_ASM "support assembly for x86 or x86_64" ON)
+
+if(SUPPORT_ASM)
+    enable_language(ASM_NASM)
+    set(CMAKE_ASM_NASM_SOURCE_FILE_EXTENSIONS asm)
+    add_definitions(-DX86_ASM)
+endif(SUPPORT_ASM)
 
 # makefile build log
 #common
@@ -41,6 +45,8 @@ add_definitions(-DX86_ASM)
 # nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/processing/src/x86/denoisefilter.o codec/processing/src/x86/denoisefilter.asm
 # nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/processing/src/x86/downsample_bilinear.o codec/processing/src/x86/downsample_bilinear.asm
 # nasm -DUNIX64 -DHAVE_AVX2 -f elf64 -I./codec/common/x86/   -o codec/processing/src/x86/vaa.o codec/processing/src/x86/vaa.asm
+
+if(SUPPORT_ASM)
 file(GLOB COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/cpuid.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/dct.asm
                         ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/deblock.asm
@@ -68,6 +74,7 @@ file(GLOB ONLY_ENC_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/x86/vaa.asm
 file(GLOB welsvp_ASM_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/codec/processing/src/x86/denoisefilter.asm
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/processing/src/x86/downsample_bilinear.asm
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/processing/src/x86/vaa.asm)
+endif(SUPPORT_ASM)
 
 file(GLOB dec_INCS ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/inc/copy_mb.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/codec/common/inc/cpu.h
@@ -426,7 +433,7 @@ foreach(mainfile IN LISTS ONLY_ENC_SRCS)
                     COMMAND echo == nasm asm ok ${mainname}.o
         )
         list(APPEND ASM_WELSVP_OBJS ${CMAKE_CURRENT_BINARY_DIR}/${mainname}.o)
-    endif(UNIX) #MSVC
+    endif(MSVC) #MSVC
     message(STATUS ==>>${mainfile})
 endforeach()
 
